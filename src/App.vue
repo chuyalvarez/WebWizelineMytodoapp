@@ -1,28 +1,79 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <h1 class="center">My ToDo App</h1>
+    <div class="row">
+
+            <form @submit.prevent="addTask">
+                <div class="col s4">
+                  <input class= "grey darken-1"v-model="newTaskName" type="text">
+                </div>
+                <div class="col s4">
+                  <button class="btn waves-effect waves-light grey darken-1" type="submit">Agregar Tarea
+                  </button>
+                </div>
+            </form>
+
+    </div>
+
+    <div class="row">
+      <div class="col s4">
+        <tasks-list :title="'Pendientes'" :task-list="tasksPending" @completar="toggleTask"/>
+      </div>
+    </div>
+    <br>
+
+    <hr>
+    <div class="row">
+      <div class="col s4">
+        <tasks-list :title="'Completados'" :task-list="tasksDone" @completar="toggleTask"/>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import TasksList from './components/TasksList'
 
-export default {
-  name: 'app',
+
+export default{
   components: {
-    HelloWorld
+    TasksList
+  },
+  data () {
+    return {
+      newTaskName: '',
+      tasks: []
+    }
+  },
+  mounted () {
+    const todos = JSON.parse(this.$localStorage.get('tasks'))
+    if (todos) {
+      this.tasks = todos
+    }
+  },
+  methods: {
+    toggleTask (task) {
+      task.done = !task.done
+      this.$localStorage.set('tasks', JSON.stringify(this.tasks))
+
+    },
+    addTask () {
+    if(!this.newTaskName) return
+     this.tasks.push({
+      name: this.newTaskName,
+      done: false
+     })
+     this.newTaskName = ''
+     this.$localStorage.set('tasks', JSON.stringify(this.tasks))
+    }
+  },
+  computed:{
+    tasksPending (){
+      return this.tasks.filter(task => !task.done)
+    },
+    tasksDone (){
+      return this.tasks.filter(task => task.done)
+    }
   }
 }
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
